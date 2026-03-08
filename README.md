@@ -20,7 +20,8 @@ Como no voy a crear un repositorio para todo, letras.sh muestra las letras de la
 
 A continuacion una muestra con CMUS, Cava, letras.sh y portada
 ![omg](screenshot.png)
-
+## Nota a usuarios de OSX
+Descarga gawk y edita el script letra.sh, remplaza awk con gawk para obtener el funcionamiento deseado
 
 # todo
 - Barra de progreso
