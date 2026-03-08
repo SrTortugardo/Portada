@@ -16,7 +16,7 @@ Y para instalar solo mueve el binario a /usr/bin/ o ni idea, lo que quieras :P
 ![Demo](demo.png)
 
 # Extras
-Como no voy a crear un repositorio para todo, letras.sh muestra las letras de las canciones.
+Como no voy a crear un repositorio para todo, letras.sh muestra las letras de las canciones. (Solo si hay archivo .lrc)
 
 A continuacion una muestra con CMUS, Cava, letras.sh y portada
 ![omg](screenshot.png)
