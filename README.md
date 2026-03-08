@@ -14,3 +14,6 @@ Y para instalar solo mueve el binario a /usr/bin/ o ni idea, lo que quieras :P
 
 # Imagen de demostracion
 ![Demo](demo.png)
+
+# todo
+- Barra de progreso
