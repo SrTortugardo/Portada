@@ -19,7 +19,7 @@ Y para instalar solo mueve el binario a /usr/bin/ o ni idea, lo que quieras :P
 Como no voy a crear un repositorio para todo, letras.sh muestra las letras de las canciones. (Solo si hay archivo .lrc)
 
 A continuacion una muestra con CMUS, Cava, letras.sh y portada
-![omg](screenshot.png)
+![omg](demo2.png)
 ## Nota a usuarios de OSX
 Descarga gawk y edita el script letra.sh, remplaza awk con gawk para obtener el funcionamiento deseado
 
