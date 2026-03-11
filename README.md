@@ -18,3 +18,6 @@ Y para instalar solo mueve el binario a /usr/bin/ o ni idea, lo que quieras :P
 # Extras
 Como no voy a crear un repositorio para todo, letras.sh muestra las letras de las canciones. (Solo si hay archivo .lrc)
 
+
+# todo
+que la informacion y la barra esten abajo del a portada
