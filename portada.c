@@ -202,6 +202,55 @@ show_with_kitty(const char *path)
     system(cmd);
 }
 
+void
+draw_progress_bar() // "nuevo"
+{
+    char position[BUF] = {0};
+    char duration[BUF] = {0};
+
+    run_capture_one("cmus-remote -Q | awk '/^position /{print $2; exit}'", position, sizeof(position));
+    run_capture_one("cmus-remote -Q | awk '/^duration /{print $2; exit}'", duration, sizeof(duration));
+
+    int pos = atoi(position);
+    int dur = atoi(duration);
+
+    int width = 35;
+
+    if (dur <= 0)
+    {
+         printf("[-----------------------------------]\n");
+         return;
+    }
+    float ratio = (float)pos / dur;
+    int cursor = ratio * width;
+
+    if (cursor >=width)
+    {
+        cursor = width - 1;
+    }
+
+    printf("[");
+
+        for (int i = 0; i < width; i++)
+    {
+        if (i < cursor)
+        {
+            printf("█");
+        }
+        else if (i == cursor)
+        {
+            printf("");
+        }
+        else
+        {
+            printf("─");
+        }
+    }
+
+    printf("] ");
+
+    printf("%d:%02d / %d:%02d\n", pos / 60, pos % 60, dur / 60, dur % 60);
+}
 
 int
 main(void)
@@ -246,6 +295,7 @@ main(void)
             printf("\033[2J\033[H");
             printf(" %s\n", title[0] ? title : "(Desconocido)");
             printf("󰠃 %s\n\n", artist[0] ? artist : "(Desconocido)");
+            draw_progress_bar();
             fflush(stdout);
 
             if (ok == 0 && file_exists(resized_path))
@@ -264,6 +314,7 @@ main(void)
             printf("\033[H");
             printf(" %s\n", title[0] ? title : "(Desconocido)");
             printf("󰠃 %s\n\n", artist[0] ? artist : "(Desconocido)");
+            draw_progress_bar();
             fflush(stdout);
             }
 
