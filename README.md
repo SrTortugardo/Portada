@@ -9,8 +9,13 @@ Y para instalar solo mueve el binario a /usr/bin/ o ni idea, lo que quieras :P
 
 # Caracteristicas
 - Ligero
-- No usa dependencias mas que las del sistema
 - Funciona
+
+# Que ocupas
+- FFMPEG
+- CMUS con cmus-remote
+- La terminal kitty
+  
 
 # Imagen de demostracion
 ![Demo](screenshot.png)
