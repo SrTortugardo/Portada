@@ -13,6 +13,8 @@
 #include <sys/wait.h>
 #include <time.h>
 
+
+
 #define BUF 1024
 #define CACHE_DIR_SUBPATH "/.config/imagecache" // aqui guardamos imagenes
 #define IMG_SIZE 512
@@ -191,13 +193,38 @@ extract_and_resize(const char *audio_path, const char *raw_path, const char *res
     return 0;
 }
 
-void 
-show_with_kitty(const char *path)
+
+void show_with_kitty(const char *path)
 {
     char cmd[1024];
+    char rows_buf[BUF] = {0};
+
+    run_capture_one("tput lines", rows_buf, sizeof(rows_buf));
+    int term_rows = atoi(rows_buf);
+    if (term_rows <= 0)
+    {
+        term_rows = 30;
+    }
+
+    char img_rows_buf[BUF] = {0};
+    snprintf(cmd, sizeof(cmd), "kitty +kitten icat \"%s\"", path);
+    run_capture_one(cmd, img_rows_buf, sizeof(img_rows_buf));
+    int img_rows = atoi(img_rows_buf);
+    if (img_rows <= 0)
+    {
+        img_rows = 10;  // fallback
+    }
+    int start_row = (term_rows - img_rows) / 2;
+    if (start_row < 0)
+    {
+        start_row = 0;
+    }
 
     system("kitty +kitten icat --clear");
-    //snprintf(cmd, sizeof(cmd), "kitty +kitten icat --transfer-mode=file \"%s\"", path);
+
+    snprintf(cmd, sizeof(cmd), "printf '\\033[%d;1H'", start_row);
+    system(cmd);
+
     snprintf(cmd, sizeof(cmd), "kitty icat --transfer-mode=memory --stdin=no \"%s\"", path);
     system(cmd);
 }
@@ -252,6 +279,53 @@ draw_progress_bar() // "nuevo"
     printf("%d:%02d / %d:%02d\n", pos / 60, pos % 60, dur / 60, dur % 60);
 }
 
+
+static void
+print_info_and_bar(const char *title, const char *artist)
+{
+    char rows_buf[BUF] = {0};
+    run_capture_one("tput lines", rows_buf, sizeof(rows_buf));
+    int rows = atoi(rows_buf);
+    if (rows <= 0) 
+    {
+        rows = 30; 
+    }
+
+    char cols_buf[BUF] = {0};
+    run_capture_one("tput cols", cols_buf, sizeof(cols_buf));
+    int cols = atoi(cols_buf);
+    if (cols <= 0)
+    {
+        cols = 80;
+    }
+
+    int t_col = (cols - (int)strlen(title)) / 2;
+    if (t_col < 0)
+    {
+        t_col = 0;
+    }
+
+    int a_col = (cols - (int)strlen(artist)) / 2;
+    if (a_col < 0)
+    {
+        a_col = 0;
+    }
+
+    int base_row = rows - 4;
+    printf("\033[%d;%dH\033[K %s\n", base_row, t_col, title && title[0] ? title : "(Desconocido)");
+    printf("\033[%d;%dH\033[K󰠃 %s\n", base_row + 1, a_col, artist && artist[0] ? artist : "(Desconocido)");
+
+    int bar_col = (cols - 35) / 2;
+    if (bar_col < 0)
+    {
+        bar_col = 0;
+    }
+    printf("\033[%d;%dH\033[K", rows - 1, bar_col);
+    draw_progress_bar();
+
+    fflush(stdout);
+}
+
 int
 main(void)
 {
@@ -269,7 +343,9 @@ main(void)
     char title[BUF] = {0};
     char artist[BUF] = {0};
     int counter = 0;
-
+    char raw_path[PATH_MAX], resized_path[PATH_MAX]; // declarado fuera del if si no da error
+    //printf("\033[2J\033[H"); // clear
+    system("clear");
     while (running)
     {
         run_capture_one("cmus-remote -Q | awk '/^file /{print substr($0,6); exit}'", cur_file, sizeof(cur_file));
@@ -286,17 +362,13 @@ main(void)
         }
 
         if (strcmp(cur_file, prev_file) != 0)
-        {
+        {   
+            //printf("\033[2J\033[H"); // clear
+            system("clear");
             counter++;
-            char raw_path[PATH_MAX], resized_path[PATH_MAX];
             make_cache_names(raw_path, sizeof(raw_path), resized_path, sizeof(resized_path), counter);
 
             int ok = extract_and_resize(cur_file, raw_path, resized_path);
-            printf("\033[2J\033[H");
-            printf(" %s\n", title[0] ? title : "(Desconocido)");
-            printf("󰠃 %s\n\n", artist[0] ? artist : "(Desconocido)");
-            draw_progress_bar();
-            fflush(stdout);
 
             if (ok == 0 && file_exists(resized_path))
             {
@@ -306,17 +378,15 @@ main(void)
                 printf("No se extrayo ni una sola portada cabeza de almendra\n");
                 fflush(stdout);
             }
+            
+            print_info_and_bar(title, artist);
 
             strncpy(prev_file, cur_file, sizeof(prev_file)-1);
             prev_file[sizeof(prev_file)-1] = '\0';
         } else
-            {
-            printf("\033[H");
-            printf(" %s\n", title[0] ? title : "(Desconocido)");
-            printf("󰠃 %s\n\n", artist[0] ? artist : "(Desconocido)");
-            draw_progress_bar();
-            fflush(stdout);
-            }
+        {
+            print_info_and_bar(title, artist);
+        }
 
         struct timespec ts;
         ts.tv_sec = 0;
@@ -331,6 +401,6 @@ main(void)
     rmdir(cache_dir);
 
     system("kitty +kitten icat --clear >/dev/null 2>&1");
-
+    printf("\033[2J\033[H"); // clear
     return 0;
 }
